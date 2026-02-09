@@ -1,0 +1,11 @@
+{
+  "name": "luxbudget-expense-tracker",
+  "version": "1.0.0",
+  "description": "A premium, money-themed expense tracker dashboard with localStorage and charts.",
+  "private": true,
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "dependencies": {}
+}
+

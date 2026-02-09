@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manan - Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <div class="floating-coins">
+      <span class="coin coin-1">₹</span>
+      <span class="coin coin-2">₹</span>
+      <span class="coin coin-3">₹</span>
+      <span class="coin coin-4">₹</span>
+    </div>
+
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <span class="brand-coin">$</span>
+        </div>
+        <div class="brand-text">
+          <h1>Manan</h1>
+          <p>Premium Expense Tracker</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div class="currency-select">
+          <label for="currency">Currency</label>
+          <select id="currency">
+            <option value="USD">$ USD</option>
+            <option value="EUR">€ EUR</option>
+            <option value="GBP">£ GBP</option>
+            <option value="INR">₹ INR</option>
+          </select>
+        </div>
+
+        <button id="darkModeToggle" class="icon-button" aria-label="Toggle dark mode">
+          <span class="icon-moon"></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- LEFT: Overview / Dashboard -->
+      <section class="panel panel-main">
+        <div class="balance-card">
+          <div class="balance-label">Total Balance</div>
+          <div class="balance-value" id="totalBalance">0</div>
+          <div class="balance-sub">
+            <span>Income: <span id="totalIncome">0</span></span>
+            <span>Expenses: <span id="totalExpenses">0</span></span>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <p class="stat-label">This Month Income</p>
+            <p class="stat-value" id="statMonthlyIncome">0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">This Month Expenses</p>
+            <p class="stat-value negative" id="statMonthlyExpenses">0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Savings Rate</p>
+            <p class="stat-value" id="statSavingsRate">0%</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Budget Remaining</p>
+            <p class="stat-value" id="statBudgetRemaining">0</p>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="card-header">
+              <h2>Spending by Category</h2>
+            </div>
+            <canvas id="categoryChart"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="card-header">
+              <h2>Monthly Cash Flow</h2>
+            </div>
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Actions / Details -->
+      <section class="panel panel-side">
+        <!-- Add Transaction -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Add Transaction</h2>
+          </div>
+          <form id="transactionForm" class="transaction-form">
+            <div class="type-toggle">
+              <button type="button" data-type="income" class="type-btn active">Income</button>
+              <button type="button" data-type="expense" class="type-btn">Expense</button>
+              <input type="hidden" id="txType" value="income" />
+            </div>
+
+            <div class="form-row">
+              <label for="amount">Amount</label>
+              <input type="number" id="amount" min="0" step="0.01" required />
+            </div>
+
+            <div class="form-row">
+              <label for="category">Category</label>
+              <select id="category" required>
+                <option value="Food">Food & Dining</option>
+                <option value="Transport">Transport</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Bills">Bills & Utilities</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Health">Health</option>
+                <option value="Salary">Salary</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="date">Date</label>
+              <input type="date" id="date" required />
+            </div>
+
+            <div class="form-row">
+              <label for="paymentMethod">Payment Method</label>
+              <select id="paymentMethod">
+                <option value="Card">Card</option>
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="description">Description</label>
+              <input type="text" id="description" placeholder="e.g., Dinner with friends" />
+            </div>
+
+            <button type="submit" class="primary-btn">
+              <span class="btn-icon">+</span>
+              Add Transaction
+              <span class="btn-coin"></span>
+            </button>
+          </form>
+        </section>
+
+        <!-- Budget Planner -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Budget Planner</h2>
+          </div>
+          <div class="budget-list" id="budgetList">
+            <!-- Filled dynamically -->
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <!-- Transactions & Analytics (Full Width) -->
+    <section class="panel panel-full">
+      <div class="panel-split">
+        <!-- Transactions -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Transaction History</h2>
+            <div class="tx-filters">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search by description or category..."
+              />
+              <select id="filterType">
+                <option value="all">All</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+            </div>
+          </div>
+          <div class="tx-table-wrapper">
+            <table class="tx-table">
+              <thead>
+                <tr>
+                  <th data-sort="date">Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Method</th>
+                  <th data-sort="amount">Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="transactionTableBody">
+                <!-- Rows injected -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Analytics / Reports -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Analytics & Goals</h2>
+          </div>
+          <div class="analytics">
+            <div class="analytics-row">
+              <div class="analytics-card">
+                <p class="analytics-label">This Month vs Last Month</p>
+                <p class="analytics-value" id="monthComparison">–</p>
+              </div>
+              <div class="analytics-card">
+                <p class="analytics-label">Top Spending Category</p>
+                <p class="analytics-value" id="topCategory">–</p>
+              </div>
+            </div>
+
+            <div class="goals-section">
+              <h3>Financial Goal</h3>
+              <div class="form-row compact">
+                <input
+                  type="text"
+                  id="goalName"
+                  placeholder="e.g., Emergency fund"
+                />
+                <input
+                  type="number"
+                  id="goalTarget"
+                  placeholder="Target amount"
+                  min="0"
+                  step="0.01"
+                />
+                <button id="saveGoal" class="secondary-btn">Save Goal</button>
+              </div>
+              <div class="goal-progress" id="goalProgressWrapper" hidden>
+                <div class="goal-header">
+                  <span id="goalNameLabel"></span>
+                  <span id="goalAmountLabel"></span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-bar-inner" id="goalProgressBar"></div>
+                </div>
+                <p class="goal-caption" id="goalCaption"></p>
+              </div>
+            </div>
+
+            <div class="analytics-actions">
+              <button id="exportJson" class="secondary-btn">Export Data (JSON)</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- Hidden audio (optional click/coin effects) -->
+    <audio id="coinSound" preload="auto">
+      <source src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" type="audio/ogg" />
+    </audio>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+
